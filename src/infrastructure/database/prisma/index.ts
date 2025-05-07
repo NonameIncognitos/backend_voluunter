@@ -1,0 +1,1 @@
+export * as Prisma from './prisma.service'

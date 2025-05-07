@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(cuid())
+  email            String?           @unique
+  password         String            @db.VarChar(255)
+  phoneNumber      String            @unique @map("phone_number")
+  firstName        String?           @map("first_name")
+  lastName         String?           @map("last_name")
+  role             Role              @default(USER)
+  permissions      Permission[]
+  isActive         Boolean           @default(true)
+  profilePicture   String?           @map("profile_picture")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  volunteerProfile VolunteerProfile?
+  missions         Mission[]
+  application      Applications?
+}
+
+model VolunteerProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+  availability String[]
+  location     String?
+  experience   String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+}
+
+model Mission {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  image       String
+  location    String
+  startDate   DateTime      @map("start_date")
+  endDate     DateTime      @map("end_date")
+  status      MissionStatus @default(PENDING)
+  volunteers  User[]
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+}
+
+model Applications {
+  id          String            @id @default(cuid())
+  email       String            @unique
+  phoneNumber String            @unique @map("phone_number")
+  firstName   String            @map("first_name")
+  lastName    String            @map("last_name")
+  status      ApplicationStatus @default(PENDING)
+  user        User?             @relation(fields: [userId], references: [id])
+  userId      String?           @unique @map("user_id")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Role {
+  USER
+  VOLUNTEER
+  COORDINATOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Permission {
+  VIEW_CONTENT
+  EDIT_CONTENT
+  MANAGE_USERS
+  MANAGE_ADMIN
+  SUPER_ADMIN
+  ALL_PERMISSIONS
+}
+
+enum MissionStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
